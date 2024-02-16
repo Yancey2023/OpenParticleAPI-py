@@ -2,7 +2,7 @@ import struct
 from abc import ABCMeta, abstractmethod
 from typing import BinaryIO
 
-from openparticle.api.Vec3 import Vec3
+from openparticle.api.output.Vec3 import Vec3
 
 STATIC = 0
 SIMPLE = 1
