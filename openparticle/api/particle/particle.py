@@ -5,37 +5,37 @@ from abc import ABCMeta, abstractmethod
 from typing import Callable
 
 from openparticle.api.math import matrix_util
-from openparticle.api.output.Identifier import Identifier
+from openparticle.api.data.Identifier import Identifier
 from openparticle.api.math.vec3 import Vec3
-from openparticle.api.output.data_color import DataColor, DataColorStatic, DataColorFree
-from openparticle.api.output.data_particle import DataParticle, DataParticleSingle, DataParticleCompound, \
+from openparticle.api.data.data_color import DataColor, DataColorStatic, DataColorFree
+from openparticle.api.data.data_particle import DataParticle, DataParticleSingle, DataParticleCompound, \
     DataParticleManager, DataParticleTransform
-from openparticle.api.output.data_matrix import DataMatrix, DataMatrixStatic, DataMatrixFree
+from openparticle.api.data.data_matrix import DataMatrix, DataMatrixStatic, DataMatrixFree
 
 
 class Particle:
     __metaclass__ = ABCMeta
 
     def __init__(self, tick_add: int, age: int):
-        self.__is_use_cache = False
+        self._is_use_cache = False
         self.cache = None
         self.tick_add = tick_add
-        self.age = age
+        self.max_age = age
 
     @abstractmethod
     def run(self) -> DataParticle:
         pass
 
     def run_with_cache(self) -> DataParticle:
-        if self.__is_use_cache and self.cache is not None:
+        if self._is_use_cache and self.cache is not None:
             return self.cache
         dataParticle = self.run()
-        if self.__is_use_cache:
+        if self._is_use_cache:
             self.cache = dataParticle
         return dataParticle
 
-    def use_cache(self, is_use_cache: bool) -> Particle:
-        self.__is_use_cache = is_use_cache
+    def use_cache(self) -> Particle:
+        self._is_use_cache = True
         return self
 
     def output(self, path: string) -> None:
@@ -43,36 +43,26 @@ class Particle:
 
     @classmethod
     def create(cls, identifier: Identifier, age: int) -> Particle:
-        return ParticleDefault(identifier, age).use_cache(True)
+        return ParticleDefault(identifier, age)
 
     def repeat(self, times: int) -> Particle:
-        children = list()
-        for i in range(times):
-            children.append(self)
-        return ParticleCompound(children).use_cache(self.__is_use_cache)
+        return ParticleCompound(list(map(lambda i: self, range(times))))
 
     @classmethod
     def compound(cls, children: list[Particle]) -> Particle:
-        if len(children) == 0:
-            raise RuntimeError("No children")
-        is_use_cache = True
-        for child in children:
-            if not child.__is_use_cache:
-                is_use_cache = False
-                break
-        return ParticleCompound(children).use_cache(is_use_cache)
+        return ParticleCompound(children)
 
-    def shape(self, function: Callable[[Particle], list[Particle]]) -> Particle:
-        return Particle.compound(function(self))
+    def shape(self, positions: list[Vec3]) -> Particle:
+        return Particle.compound(list(map(lambda position: self.offset_static(position), positions)))
 
     def tick(self, tick: int) -> Particle:
-        return ParticleTransform(self, None, None, tick).use_cache(self.__is_use_cache)
+        return ParticleTransform(self, None, None, tick)
 
     def transform(self, data_matrix: DataMatrix) -> Particle:
-        return ParticleTransform(self, data_matrix, None, 0).use_cache(self.__is_use_cache)
+        return ParticleTransform(self, data_matrix, None, 0)
 
     def color(self, data_color: DataColor) -> Particle:
-        return ParticleTransform(self, None, data_color, 0).use_cache(self.__is_use_cache)
+        return ParticleTransform(self, None, data_color, 0)
 
     def offset_static(self, offset: Vec3) -> Particle:
         return self.transform(DataMatrixStatic(matrix_util.offset(offset)))
@@ -92,7 +82,11 @@ class Particle:
     def color_free(self, colors: list[int]) -> Particle:
         return self.color(DataColorFree(colors))
 
+    # 输入一个操作和这个操作涉不涉及使用随机值
     def apply(self, function: Callable[[Particle], Particle]) -> Particle:
+        return ParticleFunction(self, function).use_cache()
+
+    def apply_random(self, function: Callable[[Particle], Particle]) -> Particle:
         return ParticleFunction(self, function)
 
 
@@ -101,18 +95,26 @@ class ParticleDefault(Particle):
     def __init__(self, identifier: Identifier, age: int):
         super().__init__(0, age)
         self.__identifier = identifier
+        self._is_use_cache = True
 
     def run(self) -> DataParticle:
-        return DataParticleSingle(self.__identifier, self.age)
+        return DataParticleSingle(self.__identifier, self.max_age)
 
 
 class ParticleCompound(Particle):
 
     def __init__(self, children: list[Particle]):
+        if len(children) == 0:
+            raise RuntimeError("No children")
         tick_add = min(map(lambda child: child.tick_add, children))
-        age = max(map(lambda child: child.tick_add + child.age, children)) - tick_add
+        age = max(map(lambda child: child.tick_add + child.max_age, children)) - tick_add
         super().__init__(tick_add, age)
         self.__children = children
+        self._is_use_cache = True
+        for child in children:
+            if not child._is_use_cache:
+                self._is_use_cache = False
+                break
 
     def run(self) -> DataParticle:
         return DataParticleCompound(list(map(lambda particle: particle.run_with_cache(), self.__children)))
@@ -121,11 +123,12 @@ class ParticleCompound(Particle):
 class ParticleTransform(Particle):
 
     def __init__(self, particle: Particle, data_matrix: None | DataMatrix, data_color: None | DataColor, tick_add: int):
-        super().__init__(particle.tick_add + tick_add, particle.age)
+        super().__init__(particle.tick_add + tick_add, particle.max_age)
         self.__particle = particle
         self.__data_matrix = data_matrix
         self.__data_color = data_color
         self.__tick_add = tick_add
+        self._is_use_cache = particle._is_use_cache
 
     def run(self) -> DataParticle:
         return DataParticleTransform(
@@ -139,12 +142,12 @@ class ParticleTransform(Particle):
 class ParticleFunction(Particle):
 
     def __init__(self, particle: Particle, function: Callable[[Particle], Particle]):
-        super().__init__(particle.tick_add, particle.age)
+        super().__init__(particle.tick_add, particle.max_age)
         self.__particle = particle
         self.__function = function
 
     def run(self) -> DataParticle:
         new_particle = self.__function(self.__particle)
-        if new_particle.age != self.__particle.age:
+        if new_particle.max_age != self.__particle.max_age:
             raise RuntimeError('Particle age mismatch')
         return new_particle.run_with_cache()

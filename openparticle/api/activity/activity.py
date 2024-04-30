@@ -3,9 +3,8 @@ import string
 import time
 from abc import ABCMeta, abstractmethod
 
-from openparticle.api.output.Identifier import Identifier
 from openparticle.api.math.vec3 import Vec3
-from openparticle.api.output.data_particle import DataParticleManager
+from openparticle.api.data.data_particle import DataParticleManager
 from openparticle.api.particle.particle import Particle
 
 

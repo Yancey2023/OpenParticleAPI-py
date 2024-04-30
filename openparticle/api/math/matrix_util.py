@@ -50,3 +50,8 @@ def rotate_z(ry: float) -> NDArray[np.float32]:
 
 def rotateXYZ(rotate: Vec3) -> NDArray[np.float32]:
     return np.dot(rotate_x(rotate.x), np.dot(rotate_y(rotate.y), rotate_z(rotate.z)))
+
+
+def apply(matrix: NDArray[np.float32], vec3: Vec3) -> Vec3:
+    result = np.dot(matrix, np.array([[vec3.x], [vec3.y], [vec3.z], [1]], dtype=np.float32))
+    return Vec3(float(result[0, 1]), float(result[1, 1]), float(result[2, 1]))
