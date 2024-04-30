@@ -16,7 +16,7 @@ class TestActivity(Activity):
 
     def get_position(self) -> Vec3:
         # 可以将粒子偏移到实际要生成粒子的位置
-        return Vec3(0, -58, 0)
+        return Vec3(0, -56, 0)
 
     def create_particle(self) -> None:
         age = 80
@@ -28,6 +28,10 @@ class TestActivity(Activity):
             .shape(util.butterfly(age))
             # 让蝴蝶倾斜45度（绕z轴旋转45度），这里的角度使用弧度制，45度角用0.25pi表示 .rotate()
             .rotate_static(Vec3(0, 0, math.pi / 4))
+            # 用多个当前粒子组成一个新粒子 .shape()
+            .shape(util.line(-50, 0, 0, 50, 0, 0, 10))
+            # 改变颜色 .color()
+            .color_static(0xFF00FF)
         )
         # self.add_particle(
         #     basic_particle

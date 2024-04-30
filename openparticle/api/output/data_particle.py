@@ -166,14 +166,14 @@ class DataParticleTransform(DataParticle):
                     elif isinstance(self.child.data_matrix, DataMatrixFree):
                         age = len(self.child.data_matrix.matrices)
                     if age == 0:
-                        self.data_matrix = DataMatrixStatic(np.multiply(
+                        self.data_matrix = DataMatrixStatic(np.dot(
                             self.data_matrix.get_matrix(0),
                             self.child.data_matrix.get_matrix(0)
                         ))
                     else:
                         final_matrices: list[NDArray[np.float32]] = list()
                         for i in range(age):
-                            final_matrices.append(np.multiply(
+                            final_matrices.append(np.dot(
                                 self.data_matrix.get_matrix(i),
                                 self.child.data_matrix.get_matrix(i)
                             ))

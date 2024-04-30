@@ -8,9 +8,9 @@ from numpy.typing import NDArray
 
 def offset(xyz: Vec3) -> NDArray[np.float32]:
     return np.array(
-        [[0, 0, 0, xyz.x],
-         [0, 0, 0, xyz.y],
-         [0, 0, 0, xyz.z],
+        [[1, 0, 0, xyz.x],
+         [0, 1, 0, xyz.y],
+         [0, 0, 1, xyz.z],
          [0, 0, 0, 1]],
         dtype=np.float32)
 
@@ -49,4 +49,4 @@ def rotate_z(ry: float) -> NDArray[np.float32]:
 
 
 def rotateXYZ(rotate: Vec3) -> NDArray[np.float32]:
-    return np.multiply(rotate_x(rotate.x), rotate_y(rotate.y), rotate_z(rotate.z))
+    return np.dot(rotate_x(rotate.x), np.dot(rotate_y(rotate.y), rotate_z(rotate.z)))
