@@ -1,18 +1,14 @@
-import math
-import string
-
 from openparticle.api.activity.activity import Activity
 from openparticle.api.function import motion
 from openparticle.api.math.vec3 import Vec3
 from openparticle.api.particle import particle_type
 from openparticle.api.particle.particle import Particle
 from openparticle.api.random import random_function
-from openparticle.api.shape import shape
 
 
 class TestActivity3(Activity):
 
-    def get_path(self) -> string:
+    def get_path(self) -> str:
         # 文件路径
         return '.\\output\\3.par'
 

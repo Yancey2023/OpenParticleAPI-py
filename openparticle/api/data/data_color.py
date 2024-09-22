@@ -12,7 +12,7 @@ class DataColor:
         pass
 
     @staticmethod
-    def write_data_color(fp: BinaryIO, dataColor: DataColor) -> None:
+    def write_data_color(fp: BinaryIO, dataColor: None | DataColor) -> None:
         if dataColor is None:
             fp.write(struct.pack('>B', 0))
         else:

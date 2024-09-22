@@ -1,5 +1,4 @@
 import os.path
-import string
 import time
 from abc import ABCMeta, abstractmethod
 
@@ -15,7 +14,7 @@ class Activity:
         self.particle_list: list[Particle] = list()
 
     @abstractmethod
-    def get_path(self) -> string:
+    def get_path(self) -> str:
         pass
 
     @abstractmethod
@@ -45,17 +44,18 @@ class Activity:
         path = self.get_path()
         manager.output(path)
         time_end = time.time()
-        print('运行耗时: {:.4f}s'.format(time_end - time_start))
+        # 在终端输出文本信息
+        print(f'运行耗时: {time_end - time_start:.4f}s')
         print(f'粒子数量: {data_particle.get_particle_count()}')
         size = os.path.getsize(path)
         if size < 1024:
-            size_str = '{:.0f}B'.format(size)
+            size_str = f'{size:.0f}B'
         elif size < 1024 * 1024:
-            size_str = '{:.0f}KB'.format(size / 1024)
+            size_str = f'{size / 1024:.0f}KB'
         elif size < 1024 * 1024 * 1024:
-            size_str = '{:.0f}MB'.format(size / 1024 / 1024)
+            size_str = f'{size / 1024 / 1024:.0f}MB'
         else:
-            size_str = '{:.0f}GB'.format(size / 1024 / 1024 / 1024)
+            size_str = f'{size / 1024 / 1024 / 1024:.0f}GB'
         print(f'文件大小: {size_str}')
 
 

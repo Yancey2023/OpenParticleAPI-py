@@ -1,5 +1,4 @@
 import math
-import string
 
 from openparticle.api.activity.activity import Activity
 from openparticle.api.function import motion
@@ -11,7 +10,7 @@ from openparticle.api.shape import shape
 
 class TestActivity5(Activity):
 
-    def get_path(self) -> string:
+    def get_path(self) -> str:
         # 文件路径
         return '.\\output\\5.par'
 

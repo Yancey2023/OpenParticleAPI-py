@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import string
 from abc import ABCMeta, abstractmethod
 from typing import Callable
 
@@ -38,22 +37,22 @@ class Particle:
         self._is_use_cache = True
         return self
 
-    def output(self, path: string) -> None:
-        DataParticleManager(self.run()).write_to_file(path)
+    def output(self, path: str) -> None:
+        DataParticleManager(self.run()).output(path)
 
     @classmethod
     def create(cls, identifier: Identifier, age: int) -> Particle:
         return ParticleDefault(identifier, age)
 
     def repeat(self, times: int) -> Particle:
-        return ParticleCompound(list(map(lambda i: self, range(times))))
+        return ParticleCompound([self for _ in range(times)])
 
     @classmethod
     def compound(cls, children: list[Particle]) -> Particle:
         return ParticleCompound(children)
 
     def shape(self, positions: list[Vec3]) -> Particle:
-        return Particle.compound(list(map(lambda position: self.offset_static(position), positions)))
+        return Particle.compound([self.offset_static(position) for position in positions])
 
     def tick(self, tick: int) -> Particle:
         return ParticleTransform(self, None, None, tick)
@@ -68,13 +67,13 @@ class Particle:
         return self.transform(DataMatrixStatic(matrix_util.offset(offset)))
 
     def offset_free(self, offsets: list[Vec3]) -> Particle:
-        return self.transform(DataMatrixFree(list(map(lambda offset: matrix_util.offset(offset), offsets))))
+        return self.transform(DataMatrixFree([matrix_util.offset(offset) for offset in offsets]))
 
     def rotate_static(self, rotate: Vec3) -> Particle:
         return self.transform(DataMatrixStatic(matrix_util.rotateXYZ(rotate)))
 
     def rotate_free(self, rotates: list[Vec3]) -> Particle:
-        return self.transform(DataMatrixFree(list(map(lambda rotate: matrix_util.rotateXYZ(rotate), rotates))))
+        return self.transform(DataMatrixFree([matrix_util.rotateXYZ(rotate) for rotate in rotates]))
 
     def color_static(self, color: int) -> Particle:
         return self.color(DataColorStatic(color))
@@ -82,7 +81,6 @@ class Particle:
     def color_free(self, colors: list[int]) -> Particle:
         return self.color(DataColorFree(colors))
 
-    # 输入一个操作和这个操作涉不涉及使用随机值
     def apply(self, function: Callable[[Particle], Particle]) -> Particle:
         return ParticleFunction(self, function).use_cache()
 
@@ -106,8 +104,8 @@ class ParticleCompound(Particle):
     def __init__(self, children: list[Particle]):
         if len(children) == 0:
             raise RuntimeError("No children")
-        tick_add = min(map(lambda child: child.tick_add, children))
-        age = max(map(lambda child: child.tick_add + child.max_age, children)) - tick_add
+        tick_add = min(child.tick_add for child in children)
+        age = max(child.tick_add + child.max_age for child in children) - tick_add
         super().__init__(tick_add, age)
         self.__children = children
         self._is_use_cache = True
@@ -117,7 +115,7 @@ class ParticleCompound(Particle):
                 break
 
     def run(self) -> DataParticle:
-        return DataParticleCompound(list(map(lambda particle: particle.run_with_cache(), self.__children)))
+        return DataParticleCompound([particle.run_with_cache() for particle in self.__children])
 
 
 class ParticleTransform(Particle):

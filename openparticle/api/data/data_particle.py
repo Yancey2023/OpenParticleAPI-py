@@ -1,5 +1,4 @@
 from __future__ import annotations
-import string
 import struct
 from abc import ABCMeta, abstractmethod
 from typing import BinaryIO
@@ -213,6 +212,6 @@ class DataParticleManager:
             data_particle.write_to_file(fp)
         fp.write(struct.pack('>I', self.__root.id))
 
-    def output(self, path: string) -> None:
+    def output(self, path: str) -> None:
         with open(path, 'wb') as fp:
             self.write_to_file(fp)

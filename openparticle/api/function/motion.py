@@ -10,16 +10,18 @@ from openparticle.api.shape import shape
 
 def offset_speed(speed: Vec3) -> Callable[[Particle], Particle]:
     def inner(particle: Particle) -> Particle:
-        return particle.offset_free(list(map(lambda age: Vec3(
-            speed.x * age, speed.y * age, speed.z * age), range(particle.max_age))))
+        return particle.offset_free([
+            Vec3(speed.x * age, speed.y * age, speed.z * age)
+            for age in range(particle.max_age)])
 
     return inner
 
 
 def rotate_speed(speed: Vec3) -> Callable[[Particle], Particle]:
     def inner(particle: Particle) -> Particle:
-        return particle.rotate_free(list(map(lambda age: Vec3(
-            speed.x * age, speed.y * age, speed.z * age), range(particle.max_age))))
+        return particle.rotate_free([
+            Vec3(speed.x * age, speed.y * age, speed.z * age)
+            for age in range(particle.max_age)])
 
     return inner
 
@@ -31,8 +33,9 @@ def butterfly(particle_count: int) -> Callable[[Particle], Particle]:
             r = 2 * math.fabs(math.sin(2 * theta)) + math.fabs(math.sin(4 * theta))
             x = r * math.sin(theta)
             y = r * math.cos(theta)
-            particle_list.append(particle.offset_free(
-                list(map(lambda age: Vec3(x, math.fabs(y) * math.sin(0.5 * age), y), range(particle.max_age)))))
+            particle_list.append(particle.offset_free([
+                Vec3(x, math.fabs(y) * math.sin(0.5 * age), y)
+                for age in range(particle.max_age)]))
         return Particle.compound(particle_list)
 
     return inner

@@ -1,12 +1,11 @@
 from __future__ import annotations
-import string
 import struct
 from typing import BinaryIO
 
 
 class Identifier:
 
-    def __init__(self, namespace: string, value: string):
+    def __init__(self, namespace: str, value: str):
         self.namespace = namespace
         self.value = value
         self.id = -1

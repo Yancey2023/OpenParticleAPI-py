@@ -30,7 +30,7 @@ class DataMatrix:
         pass
 
     @staticmethod
-    def write_data_matrix(fp: BinaryIO, dataVec3: DataMatrix) -> None:
+    def write_data_matrix(fp: BinaryIO, dataVec3: None | DataMatrix) -> None:
         if dataVec3 is None:
             fp.write(struct.pack('>B', 0))
         else:

@@ -18,11 +18,11 @@ def line(x1, y1, z1, x2, y2, z2, count) -> list[Vec3]:
 def fourier_transform(radius1: float, angular_velocity1: float,
                       radius2: float, angular_velocity2: float,
                       times: int) -> list[Vec3]:
-    return list(map(lambda i: Vec3(
+    return [Vec3(
         radius1 * math.sin(angular_velocity1 * i) + radius2 * math.sin(angular_velocity2 * i),
         0,
         radius1 * math.cos(angular_velocity1 * i) + radius2 * math.cos(angular_velocity2 * i)
-    ), range(times)))
+    ) for i in range(times)]
 
 
 def compound(shapes: list[list[Vec3]]) -> list[Vec3]:
